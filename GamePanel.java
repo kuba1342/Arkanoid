@@ -2,83 +2,106 @@ package com.example.kuba.arkanoid;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.media.Image;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.ImageView;
 
-public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
-    private MainThread thread;
 
-    private Platform platform;
+// Przerzucić do MainActivity
 
-    ImageView platformImage;
 
+public class GamePanel extends SurfaceView implements Runnable {
+    Thread gameThread = null;
+    SurfaceHolder surfaceHolder;
+    boolean playing;
+    boolean paused = true;
+    Canvas canvas;
+    Paint paint;
+    long fps;
+    private long timeThisFrame;
     public GamePanel(Context context) {
         super(context);
-
-        getHolder().addCallback(this);
-
-        thread = new MainThread(getHolder(), this);
-
-        //platformImage.findViewById(R.id.imagePlatform);
-        //platformImage.setImageResource(R.drawable.platform);
-        //platformImage.setImageBitmap(R.drawable.platform);
-        platform = new Platform(250, 800, 50, 20, platformImage);
-
-        setFocusable(true);
+        surfaceHolder = getHolder();
+        paint =  new Paint();
     }
 
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-    }
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        thread = new MainThread(getHolder(), this);
-
-        thread.setRunning(true);
-        thread.start();
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        boolean retry = true;
-        while(true) {
-            try {
-                thread.setRunning(false);
-                thread.join();
-            } catch (Exception e) {e.printStackTrace(); }
-            retry = false;
+    public void run() {
+        while (playing) {
+            long startFrameTime = System.currentTimeMillis();
+            if (!paused) {
+                update();
+            }
+            draw();
+            timeThisFrame = System.currentTimeMillis() - startFrameTime;
+            if (timeThisFrame >= 1) {
+                fps = 1000 / timeThisFrame;
+            }
         }
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return true;
-        //return super.onTouchEvent(event);
-    }
-
     public void update() {
-        platform.update();
+
+    }
+
+    public void draw() {
+        if (surfaceHolder.getSurface().isValid()) {
+            canvas = surfaceHolder.lockCanvas();
+            canvas.drawColor(Color.argb(255, 26, 128, 182));
+            paint.setColor(Color.argb(255, 255, 255, 255));
+            // draw the paddle
+            // draw the ball
+            // draw the bricks
+            // draw the HUD
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }
+    }
+
+    public void pause() {
+        playing = false;
+        try {
+            gameThread.join();
+        } catch (InterruptedException e) {
+            Log.e("Error:", "joining thread");
+        }
+    }
+
+    public void resume() {
+        playing = true;
+        gameThread = new Thread(this);
+        gameThread.start();
+    }
+
+    public boolean onTouchEvent(MotionEvent motionEvent) {
+        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+            // player touched the screen
+            case MotionEvent.ACTION_DOWN:
+                break;
+            //player removed finger from the screen
+            case MotionEvent.ACTION_UP:
+                break;
+        }
+        return true;
     }
 
     @Override
-    public void draw (Canvas canvas) {
-        super.draw(canvas);
+    protected void onResume() {
+        super.onResume();
 
-        platformImage.setImageResource(R.drawable.platform);
+        // tell the gameView resume method to execute
+        GamePanel.resume();
     }
 
-    public void draw (ImageView imageView) {
-        //platformImage = imageView;
-        platform.setImage(imageView);
-        platform.display();
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // tell the gameView pause method to execute
+        GamePanel.pause();
     }
-
-
-
 }
