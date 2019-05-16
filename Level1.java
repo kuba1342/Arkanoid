@@ -22,6 +22,10 @@ public class Level1 extends AppCompatActivity {
     int platformSize;
     ImageView platformImage;
 
+    boolean running;
+    static final int maxFPS = 30;
+    private double averageFPS;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,8 +59,34 @@ public class Level1 extends AppCompatActivity {
         platformImage.setImageResource(R.drawable.platform);
         platformSize = 50;
         playerPlatform = new Platform(250, 800, platformSize, 20, platformImage); //Dodać pozycje na stałe
-        //while(true) {
+
+        long startTime;
+        long timeMillis = 1000/maxFPS;
+        long waitTime;
+        int frameCount = 0;
+        long totalTime = 0;
+        long targetTime = 1000/maxFPS;
+
+        running = true;
+
+        while(running) {
+            startTime = System.nanoTime();
+            timeMillis = (System.nanoTime() - startTime) / 1000000;
+            waitTime = targetTime - timeMillis;
+            try {
+                if (waitTime > 0){}
+                    //this.sleep(waitTime);
+            } catch (Exception e) {e.printStackTrace();}
+
+            totalTime += System.nanoTime() - startTime;
+            frameCount++;
+            if (frameCount == maxFPS) {
+                averageFPS = 1000 / (totalTime / frameCount) / 1000000;
+                frameCount = 0;
+                totalTime = 0;
+            }
+
             playerPlatform.display(); // pętla się wysypuje
-        //}
+        }
     }
 }
