@@ -51,6 +51,10 @@ public class MainMenuActivity extends Activity {
         Brick[] bricks = new Brick[200];
         int numBricks = 0;
 
+        int lives = 3;
+
+        int score = 0;
+
         public GamePanel(Context context) {
             super(context);
             surfaceHolder = getHolder();
@@ -69,6 +73,9 @@ public class MainMenuActivity extends Activity {
         }
 
         public void createBricksAndRestart() {
+            score = 0;
+            lives = 3;
+
             // put ball back to the start
             ball.reset(screenWidth, screenHeight);
 
@@ -103,46 +110,56 @@ public class MainMenuActivity extends Activity {
         public void update() {
             platform.update(fps);
             // collisions - ball and brick
-            for(int i = 0; i < numBricks; i++) {
-                if(bricks[i].getVisibility()) {
-                    if(RectF.intersects(bricks[i].getRect(), ball.getRect())) {
+            for (int i = 0; i < numBricks; i++) {
+                if (bricks[i].getVisibility()) {
+                    if (RectF.intersects(bricks[i].getRect(), ball.getRect())) {
                         bricks[i].setInvisible();
                         ball.reverseYVelocity();
+                        score += 10;
                     }
                 }
             }
 
             // collisions - ball and platform
-            if(RectF.intersects(platform.getRect(), ball.getRect())) {
-                ball.setRandomXVelocity();
+            if (RectF.intersects(platform.getRect(), ball.getRect())) {
                 ball.reverseYVelocity();
                 ball.clearObstacleY(platform.getRect().top - 2);
             }
 
             // collisions - bottom of the screen
-            if(ball.getRect().bottom > screenHeight) {
+            if (ball.getRect().bottom > screenHeight) {
                 ball.reverseYVelocity();
                 ball.clearObstacleY(screenHeight - 2);
                 // lose life point...
                 // check if life points still available...
+                lives--;
+                if (lives == 0) {
+                    paused = true;
+                    createBricksAndRestart();
+                }
             }
 
             // collisions - top of the screen
-            if(ball.getRect().top < 0) {
+            if (ball.getRect().top < 0) {
                 ball.reverseYVelocity();
                 ball.clearObstacleY(12);
             }
 
             // collisions - right wall
-            if(ball.getRect().right > screenWidth - 10) {
+            if (ball.getRect().right > screenWidth - 10) {
                 ball.reverseXVelocity();
                 ball.clearObstacleX(screenWidth - 22);
             }
 
             // collisions - left wall
-            if(ball.getRect().left < 0) {
+            if (ball.getRect().left < 0) {
                 ball.reverseXVelocity();
                 ball.clearObstacleX(2);
+            }
+
+            if (score == numBricks * 10) {
+                paused = true;
+                createBricksAndRestart();
             }
 
             ball.update(fps);
@@ -161,10 +178,24 @@ public class MainMenuActivity extends Activity {
                 // change color
                 paint.setColor(Color.argb(255, 249, 129, 0));
                 // draw bricks if visible
-                for(int i = 0; i < numBricks; i++) {
-                    if(bricks[i].getVisibility()) {
+                for (int i = 0; i < numBricks; i++) {
+                    if (bricks[i].getVisibility()) {
                         canvas.drawRect(bricks[i].getRect(), paint);
                     }
+                }
+                // draw score and lives
+                paint.setColor(Color.argb(255, 255, 255, 255));
+                paint.setTextSize(40);
+                canvas.drawText("Score: " + score + " Lives: " + lives, 10, 40, paint);
+                // check if lost
+                if (lives <= 0) {
+                    paint.setTextSize(90);
+                    canvas.drawText("YOU HAVE LOST!", 10, screenHeight / 2, paint);
+                }
+                // check if won
+                if (score == numBricks * 10) {
+                    paint.setTextSize(90);
+                    canvas.drawText("YOU HAVE WON!", 10, screenHeight / 2, paint);
                 }
                 // draw the HUD
                 surfaceHolder.unlockCanvasAndPost(canvas);
@@ -221,4 +252,10 @@ public class MainMenuActivity extends Activity {
         // tell the gameView pause method to execute
         gamePanel.pause();
     }
+
+    // tools
+    float map(float x, float in_min, float in_max, float out_min, float out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
 }
