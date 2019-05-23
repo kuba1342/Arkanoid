@@ -47,6 +47,30 @@ public class Ball {
         }
     }
 
+    public void setXVelocity(float x) {
+        xVelocity = x;
+    }
+
+    public void setYVelocity(float y) {
+        yVelocity = y;
+    }
+
+    public void decreaseXVelocity(float value) {
+        xVelocity -= value;
+    }
+
+    public void decreaseYVelocity(float value) {
+        yVelocity -= value;
+    }
+
+    public void increaseXVelocity(float value) {
+        xVelocity += value;
+    }
+
+    public void increaseYVelocity(float value) {
+        yVelocity += value;
+    }
+
     public void clearObstacleY(float y) {
         rect.bottom = y;
         rect.top = y - ballHeight;
@@ -62,5 +86,17 @@ public class Ball {
         rect.top = y - 20;
         rect.right = x / 2 + ballWidth;
         rect.bottom = y - 20 - ballHeight;
+    }
+
+    public float getYVelocity() {
+        return yVelocity;
+    }
+
+    public float getXVelocity() {
+        return xVelocity;
+    }
+
+    public float getWidth() {
+        return ballWidth;
     }
 }

@@ -76,4 +76,20 @@ public class Platform {
     void setImage(ImageView image) {
         image = image;
     }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int value) {
+        this.width += value;
+    }
 }
