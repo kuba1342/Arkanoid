@@ -45,6 +45,8 @@ public class MainMenuActivity extends Activity {
         int screenWidth;
         int screenHeight;
 
+        int screenWidthForPlatform;
+
         Platform platform;
         Ball ball;
 
@@ -54,11 +56,16 @@ public class MainMenuActivity extends Activity {
         int lives = 3;
 
         int score = 0;
+        int bricksToWin;
+        int hitCounter;
 
         // Bricks limits for 1st level
         int redLimit = 2;
         int purpleLimit = 4;
-        int greyLimit = 2;
+        int greyLimit = 3;
+        int yellowLimit = 4;
+        int pinkLimit = 5;
+        int greenLimit = 5;
 
         // Suma punktów do wygrania - kolory
         int scoreLim;
@@ -76,8 +83,12 @@ public class MainMenuActivity extends Activity {
             screenWidth = size.x;
             screenHeight = size.y;
 
-            platform = new Platform(screenWidth / 2 - 65, screenHeight - 90, 130, 20);
-            ball = new Ball(screenWidth, screenHeight);
+            size = new Point();
+            display.getRealSize(size);
+            screenWidthForPlatform = size.x;
+
+            platform = new Platform(screenWidth / 2 - 65, screenHeight - 90, 130, 20, screenWidthForPlatform);
+            ball = new Ball(screenWidth, screenHeight - 50);
 
             createBricksAndRestart();
         }
@@ -89,6 +100,10 @@ public class MainMenuActivity extends Activity {
             // Bricks' statuses
             Brick.reds = 0;
             Brick.purples = 0;
+            Brick.greys = 0;
+            Brick.yellows = 0;
+            Brick.pinks = 0;
+            Brick.greens = 0;
 
             // put ball back to the start
             ball.reset(screenWidth, screenHeight);
@@ -98,14 +113,18 @@ public class MainMenuActivity extends Activity {
 
             // build a wall
             numBricks = 0;
+            Brick.greyCounter = 0;
 
             for (int column = 0; column < 8; column++) {
                 for (int row = 0; row < 3; row++) {
                     bricks[numBricks] = new Brick(row, column, brickWidth, brickHeight, redLimit,
-                            purpleLimit, greyLimit);
+                            purpleLimit, greyLimit, yellowLimit, pinkLimit, greenLimit);
                     numBricks++;
                 }
             }
+
+            bricksToWin = 24 - Brick.greyCounter;
+            hitCounter = 0;
         }
 
         public void run() {
@@ -128,14 +147,23 @@ public class MainMenuActivity extends Activity {
             for (int i = 0; i < numBricks; i++) {
                 if (bricks[i].getVisibility()) {
                     if (RectF.intersects(bricks[i].getRect(), ball.getRect())) {
+
+                        // ----------------- SPRAWDZIĆ TE CZARY ------------------------
+//                        if (ball.getRect().left < bricks[i].getRect().left)
+//                            ball.reverseXVelocity();
+//                        else if (ball.getRect().left > bricks[i].getRect().left)
+//                            ball.reverseXVelocity();
+//                        else {
+                        ball.reverseYVelocity();
+                        //}
+
                         if (bricks[i].getStatus() != "grey") {
                             bricks[i].setInvisible();
+                            hitCounter += 1;
                         }
                         if (bricks[i].getStatus() == "red") {
                             powerup.generatePowerup(platform, ball);
                         }
-                        ball.reverseYVelocity();
-                        //score += 10;
                         score += bricks[i].getScore();
                     }
                 }
@@ -178,11 +206,10 @@ public class MainMenuActivity extends Activity {
                 ball.clearObstacleX(2);
             }
 
-            // ------------------------ Suma wszystkich klocków - UAKTUALNIĆ!!!!! ------------------------------------
-//            if (score == numBricks * 10) {
-//                paused = true;
-//                createBricksAndRestart();
-//            }
+            if (hitCounter == bricksToWin) {
+                paused = true;
+                createBricksAndRestart();
+            }
 
             ball.update(fps);
         }
@@ -210,6 +237,15 @@ public class MainMenuActivity extends Activity {
                         }
                         if (bricks[i].getStatus() == "grey") {
                             paint.setColor(Color.argb(255, 169, 169, 169));
+                        }
+                        if (bricks[i].getStatus() == "yellow") {
+                            paint.setColor(Color.argb(255, 255, 255, 0));
+                        }
+                        if (bricks[i].getStatus() == "pink") {
+                            paint.setColor(Color.argb(255, 192, 169, 203));
+                        }
+                        if (bricks[i].getStatus() == "green") {
+                            paint.setColor(Color.argb(255, 0, 255, 0));
                         }
                         canvas.drawRect(bricks[i].getRect(), paint);
                     }

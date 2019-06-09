@@ -10,15 +10,20 @@ public class Brick {
     public static int reds;
     public static int purples;
     public static int greys;
+    public static int yellows;
+    public static int greens;
+    public static int pinks;
+    public static int greyCounter = 0;
 
-    public Brick(int row, int column, int width, int height, int redLimit, int purpleLimit, int greyLimit) {
+    public Brick(int row, int column, int width, int height, int redLimit, int purpleLimit, int greyLimit,
+                 int yellowLimit, int pinkLimit, int greenLimit) {
         isVisible = true;
         int padding = 1;
         rect = new RectF(column * width + padding,
                 row * height + padding,
                 column * width + width - padding,
                 row * height + height - padding);
-        generateStatus(redLimit, purpleLimit, greyLimit);
+        generateStatus(redLimit, purpleLimit, greyLimit, yellowLimit, pinkLimit, greenLimit);
         setScore();
     }
 
@@ -26,8 +31,9 @@ public class Brick {
         return this.rect;
     }
 
-    public void generateStatus(int checkRed, int checkPurple, int checkGrey) {
-        int random = (int) (Math.random() * 3 + 1);
+    public void generateStatus(int checkRed, int checkPurple, int checkGrey, int checkYellow, int checkPinks,
+                               int checkGreens) {
+        int random = (int) (Math.random() * 9 + 1);
         if (random == 1) {
             if (reds < checkRed) {
                 status = "red";
@@ -44,6 +50,26 @@ public class Brick {
             if (greys < checkGrey) {
                 status = "grey";
                 greys += 1;
+                greyCounter += 1;
+            }
+        }
+        if (random == 4) {
+            if (yellows < checkYellow) {
+                status = "yellow";
+                yellows += 1;
+            }
+        }
+        if (random == 5) {
+            if (pinks < checkPinks) {
+                status = "pink";
+                pinks += 1;
+            }
+        }
+
+        if (random == 6) {
+            if (greens < checkGreens) {
+                status = "green";
+                greens += 1;
             }
         }
 
@@ -56,6 +82,15 @@ public class Brick {
             score = 90;
         } else if (status == "grey") {
             score = 0;
+        }
+        else if (status == "yellow") {
+            score = 75;
+        }
+        else if (status == "pinks") {
+            score = 65;
+        }
+        else if(status == "greens") {
+            score = 55;
         } else {
             score = 45;
         }

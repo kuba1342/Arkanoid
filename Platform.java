@@ -1,7 +1,9 @@
 package com.example.kuba.arkanoid;
 
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.media.Image;
+import android.view.Display;
 import android.widget.ImageView;
 
 public class Platform {
@@ -14,6 +16,8 @@ public class Platform {
     public final int STOPPED = 0;
     public final int LEFT = 1;
     public final int RIGHT = 2;
+
+    private int screenWidth;
 
     private RectF rect;
 
@@ -39,6 +43,19 @@ public class Platform {
         platformSpeed = 350;
     }
 
+    Platform(float x, float y, int width, int height, int screenWidth) {
+        // x = screenX / 2;
+        // y = screenY - 20;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        //rect = new RectF(x, y, x + width, this.height);
+        rect = new RectF(x, y, x + width, y + height);
+        platformSpeed = 350;
+        this.screenWidth = screenWidth;
+    }
+
     public RectF getRect() {
         return rect;
     }
@@ -53,11 +70,11 @@ public class Platform {
     }
 
     public void update(long fps) {
-        if (platformMoving == LEFT) {
+        if (platformMoving == LEFT && (rect.centerX() - width / 2 > 0)) {
             x = x - platformSpeed / fps;
         }
 
-        if (platformMoving == RIGHT) {
+        if (platformMoving == RIGHT && (rect.centerX() + width / 2 < screenWidth)) {
             x = x + platformSpeed / fps;
         }
 
